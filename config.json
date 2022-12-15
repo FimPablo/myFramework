@@ -1,0 +1,11 @@
+{
+    "allowedRequestTypes": [
+        "GET",
+        "POST",
+        "DELETE"
+    ],
+    "allowedPathRequest": [
+        "api",
+        "view"
+    ]
+}
