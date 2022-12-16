@@ -7,6 +7,8 @@ class Model
     private array $queryStructure = [];
     protected string $table;
 
+    private string $query;
+
     protected function where(array $condicions)
     {
         $this->queryStructure['where'] = $condicions;
@@ -25,44 +27,129 @@ class Model
         return $this;
     }
 
+    protected function before(int $offset)
+    {
+        $this->queryStructure['offset'] = $offset;
+        return $this;
+    }
+
     protected function get(string $fields = '*')
     {
-        $buildedQuery = "SELECT {$fields} FROM {$this->table}";
+        $this->queryStructure['action'] = 'select';
+        $this->queryStructure['selectFields'] = $fields;
 
-        if (isset($this->queryStructure['where'])) {
-            $buildedQuery .= " WHERE ";
+        $this->queryBuilder();
 
-            foreach ($this->queryStructure['where'] as $k => $conditions) {
-                if ($k > 0) {
-                    $buildedQuery .= " AND ";
-                }
-                $buildedQuery .= "{$conditions[0]} {$conditions[1]} {$conditions[2]}";
-            }
-        }
-
-        return $this->run($buildedQuery);
+        return $this->run();
     }
 
     protected function set(array $fieldsAndValues)
     {
-        $buildedQuery = "UPDATE {$this->table} SET ";
+        $this->queryStructure['action'] = 'update';
 
-        if (isset($this->queryStructure['where'])) {
-            $buildedQuery .= " WHERE ";
+        if (gettype($fieldsAndValues) != 'array') {
+            throw new \Exception("Empty field and values", 1);
+        }
 
-            foreach ($this->queryStructure['where'] as $k => $conditions) {
-                if ($k > 0) {
-                    $buildedQuery .= " AND ";
+        $this->queryStructure['updateFieldsAndValues'] = $fieldsAndValues;
+
+        $this->queryBuilder();
+
+        return $this->run();
+    }
+
+    protected function delete(){
+        $this->queryStructure['action'] = 'delete';
+
+        $this->queryBuilder();
+
+        return $this->run();
+    }
+
+    private function queryBuilder()
+    {
+        $queryByAction= [
+            "select" => "SELECT {$this->queryStructure['selectFields']} FROM {$this->table} ",
+            "update" => "UPDATE {$this->table} SET ",
+            "delete" => "DELETE FROM {$this->table} "
+        ];
+
+        $this->query = $queryByAction[$this->queryStructure['action']];
+
+        if($this->queryStructure['action'] == 'update'){
+            foreach ($this->queryStructure['updateFieldsAndValues'] as $k => $FieldAndValue) {
+
+                if (gettype($FieldAndValue) != 'array') {
+                    throw new \Exception("Empty field and values", 1);
                 }
-                $buildedQuery .= "{$conditions[0]} {$conditions[1]} {$conditions[2]}";
+    
+                $field = $FieldAndValue[0];
+                $value = $FieldAndValue[1];
+    
+                if ($k > 0) {
+                    $this->query .= ",";
+                }
+    
+                $this->query .= " {$field} = " . $this->formatValues($value);
             }
         }
 
-        return $this->run($buildedQuery);
+        if (isset($this->queryStructure['where'])) {
+            $this->query .= " WHERE ";
+
+            foreach ($this->queryStructure['where'] as $k => $conditions) {
+                if ($k > 0) {
+                    $this->query .= " AND ";
+                }
+                $this->query .= "{$conditions[0]} {$conditions[1]} {$conditions[2]}";
+            }
+        }
+
+        if(isset($this->queryStructure['limit']))
+        {
+            $this->query .= " LIMIT {$this->queryStructure['limit']} ";
+        }
+
+        if(isset($this->queryStructure['offset']))
+        {
+            $this->query .= " offset {$this->queryStructure['offset']} ";
+        }
+
+        $this->queryStructure = [];
     }
 
-    private function run(string $query)
+    private function run()
     {
-        return $query;
+        return $this->query;
+    }
+
+    private function formatValues($value)
+    {
+        $formatTypes = [
+            'string' => "formatString",
+            'double' => "formatFloat"
+        ];
+
+        $valueType = gettype($value);
+
+        if (!isset($formatTypes[$valueType])) {
+            return $value;
+        }
+
+        $function = $formatTypes[$valueType];
+
+        return $this->$function($value);
+    }
+
+    private function formatString(string $value)
+    {
+        return "'{$value}'";
+    }
+
+    private function formatFloat(float $value)
+    {
+        $integerAndDecimal = explode('.', (string)$value);
+
+        return "{$integerAndDecimal[0]},{$integerAndDecimal[1]}";
     }
 }

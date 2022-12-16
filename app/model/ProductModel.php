@@ -20,6 +20,8 @@ class ProductModel extends Model
     {
         return $this
             ->where([['id', '=', $id]])
+            ->take(1)
+            ->before(10)
             ->get();
     }
 
@@ -30,7 +32,27 @@ class ProductModel extends Model
             ['id', '=', $id]
         ])
         ->set([
-            ['value', $value]
+            ['price', $value]
         ]);
+    }
+
+    public function setNaneById(int $id, string $name)
+    {
+        return $this
+        ->where([
+            ['id', '=', $id]
+        ])
+        ->set([
+            ['name', $name]
+        ]);
+    }
+
+    public function deleteProduct(int $id)
+    {
+        return $this
+        ->where([
+            ['id', '=', $id]
+        ])
+        ->delete();
     }
 }
