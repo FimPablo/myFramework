@@ -1,6 +1,6 @@
 <?php
 
-require 'controller/TesteController.php';
+use Framework\Route;
 
 use App\Controllers\TesteController;
 

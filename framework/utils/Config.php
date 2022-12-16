@@ -1,5 +1,7 @@
 <?php
 
+namespace Framework\Utils;
+
 class Config
 {
     public static function get(string $key)

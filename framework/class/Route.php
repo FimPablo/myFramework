@@ -1,5 +1,7 @@
 <?php
 
+namespace Framework;
+
 class Route
 {
     public static function get(string $routeName, $routeAction)
