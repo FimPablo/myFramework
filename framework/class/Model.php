@@ -2,12 +2,27 @@
 
 namespace Framework;
 
-class Model
+use Framework\DBConnector;
+use Framework\QueryBuilder;
+
+class Model extends DBConnector
 {
     private array $queryStructure = [];
     protected string $table;
 
     private string $query;
+
+    public function __construct()
+    {
+        parent::__construct();
+    }
+
+    protected function defineColumn(string $name)
+    {
+        $this->{$name} = new Column($name, $this->table);
+
+        return $this;
+    }
 
     protected function where(array $condicions)
     {
@@ -33,123 +48,57 @@ class Model
         return $this;
     }
 
-    protected function get(string $fields = '*')
+    protected function with(Model $related, array $relations)
     {
-        $this->queryStructure['action'] = 'select';
-        $this->queryStructure['selectFields'] = $fields;
+        $this->queryStructure['innerJoin'][] = [
+            "table" => $related->table,
+            "relations" => $relations
+        ];
+        return $this;
+    }
 
-        $this->queryBuilder();
+    protected function get(array $fieldsAndNicknames = [])
+    {
+        $this->queryStructure['fieldsAndNicknames'] = $fieldsAndNicknames;
+
+        $this->query = QueryBuilder::buildSelectQuery($this->table, $this->queryStructure);
 
         return $this->run();
     }
 
     protected function set(array $fieldsAndValues)
     {
-        $this->queryStructure['action'] = 'update';
-
-        if (gettype($fieldsAndValues) != 'array') {
-            throw new \Exception("Empty field and values", 1);
-        }
-
         $this->queryStructure['updateFieldsAndValues'] = $fieldsAndValues;
 
-        $this->queryBuilder();
+        $this->query = QueryBuilder::buildUpdateQuery($this->table, $this->queryStructure);
 
         return $this->run();
     }
 
-    protected function delete(){
-        $this->queryStructure['action'] = 'delete';
-
-        $this->queryBuilder();
-
-        return $this->run();
-    }
-
-    private function queryBuilder()
+    protected function delete()
     {
-        $queryByAction= [
-            "select" => "SELECT {$this->queryStructure['selectFields']} FROM {$this->table} ",
-            "update" => "UPDATE {$this->table} SET ",
-            "delete" => "DELETE FROM {$this->table} "
-        ];
+        $this->query = QueryBuilder::buildDeleteQuery($this->table, $this->queryStructure);
 
-        $this->query = $queryByAction[$this->queryStructure['action']];
+        return $this->run();
+    }
 
-        if($this->queryStructure['action'] == 'update'){
-            foreach ($this->queryStructure['updateFieldsAndValues'] as $k => $FieldAndValue) {
+    protected function new()
+    {
+        $fieldsAndValues = [];
 
-                if (gettype($FieldAndValue) != 'array') {
-                    throw new \Exception("Empty field and values", 1);
-                }
-    
-                $field = $FieldAndValue[0];
-                $value = $FieldAndValue[1];
-    
-                if ($k > 0) {
-                    $this->query .= ",";
-                }
-    
-                $this->query .= " {$field} = " . $this->formatValues($value);
+        foreach ($this as $key => $v) {
+            if(get_class($this->{$key}) != 'Framework\Column'){
+                continue;
             }
+            $fieldsAndValues[] = $this->{$key};
         }
 
-        if (isset($this->queryStructure['where'])) {
-            $this->query .= " WHERE ";
-
-            foreach ($this->queryStructure['where'] as $k => $conditions) {
-                if ($k > 0) {
-                    $this->query .= " AND ";
-                }
-                $this->query .= "{$conditions[0]} {$conditions[1]} {$conditions[2]}";
-            }
-        }
-
-        if(isset($this->queryStructure['limit']))
-        {
-            $this->query .= " LIMIT {$this->queryStructure['limit']} ";
-        }
-
-        if(isset($this->queryStructure['offset']))
-        {
-            $this->query .= " offset {$this->queryStructure['offset']} ";
-        }
-
-        $this->queryStructure = [];
+        $this->query = QueryBuilder::buildInsertQuery($this->table, $fieldsAndValues);
+        return $this->run();
     }
 
     private function run()
     {
-        return $this->query;
-    }
-
-    private function formatValues($value)
-    {
-        $formatTypes = [
-            'string' => "formatString",
-            'double' => "formatFloat"
-        ];
-
-        $valueType = gettype($value);
-
-        if (!isset($formatTypes[$valueType])) {
-            return $value;
-        }
-
-        $function = $formatTypes[$valueType];
-
-        return $this->$function($value);
-    }
-
-    private function formatString(string $value)
-    {
-        return "'{$value}'";
-    }
-
-    private function formatFloat(float $value)
-    {
-        $integerAndDecimal = explode('.', (string)$value);
-
-        return "{$integerAndDecimal[0]},{$integerAndDecimal[1]}";
+        var_dump($this->query);
     }
 }

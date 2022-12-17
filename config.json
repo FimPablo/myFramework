@@ -1,11 +1,8 @@
 {
-    "allowedRequestTypes": [
-        "GET",
-        "POST",
-        "DELETE"
-    ],
-    "allowedPathRequest": [
-        "api",
-        "view"
-    ]
+    "databaseConfig": {
+        "serverIp" : "",
+        "databaseName":"",
+        "serverLogin":"",
+        "serverPassword":""
+    }
 }

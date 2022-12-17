@@ -12,13 +12,20 @@ class TesteController extends Controller
         $product = new ProductModel();
 
         echo "<pre>";
-        
-        var_dump($product->getProductById(10));
 
-        var_dump($product->setValueById(1, 50.10));
+        $product->getProductById(10);
 
-        var_dump($product->setNaneById(1, 'TILAPIA'));
+        $product->setValueById(1, 50.10);
 
-        var_dump($product->deleteProduct(11));
+        $product->setNameById(1, 'TILAPIA');
+
+        $product->deleteProduct(11);
+
+        $product->getProductQuantityById(11);
+
+        $product->newProduct([
+            'name' => 'salmão', 
+            'price' => 90.40
+        ]);
     }
 }

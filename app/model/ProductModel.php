@@ -6,20 +6,21 @@ use Framework\Model;
 
 class ProductModel extends Model
 {
-    public int $id;
-    public string $name;
-    public float $value;
-    public int $quantity;
-
     public function __construct()
     {
+        parent::__construct();
+
         $this->table = "Products";
+        $this
+        ->defineColumn('id')
+        ->defineColumn('name')
+        ->defineColumn('price');
     }
 
     public function getProductById($id)
     {
         return $this
-            ->where([['id', '=', $id]])
+            ->where([[$this->id, '=', $id]])
             ->take(1)
             ->before(10)
             ->get();
@@ -29,21 +30,21 @@ class ProductModel extends Model
     {
         return $this
         ->where([
-            ['id', '=', $id]
+            [$this->id, '=', $id]
         ])
         ->set([
-            ['price', $value]
+            [$this->name, $value]
         ]);
     }
 
-    public function setNaneById(int $id, string $name)
+    public function setNameById(int $id, string $name)
     {
         return $this
         ->where([
-            ['id', '=', $id]
+            [$this->id, '=', $id]
         ])
         ->set([
-            ['name', $name]
+            [$this->name, $name]
         ]);
     }
 
@@ -51,8 +52,30 @@ class ProductModel extends Model
     {
         return $this
         ->where([
-            ['id', '=', $id]
+            [$this->id, '=', $id]
         ])
         ->delete();
+    }
+
+    public function getProductQuantityById(int $id)
+    {
+        $storage = new StorageModel();
+
+        return $this
+        ->where([
+            [$this->id, '=', $id],
+        ])
+        ->with($storage, [
+            [$this->id, "=", $storage->id]
+        ])
+        ->get();
+    }
+
+    public function newProduct(array $productInfo)
+    {
+        $this->price->value = $productInfo['price'];
+        $this->name->value = $productInfo['name'];
+
+        return $this->new();
     }
 }

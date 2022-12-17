@@ -22,6 +22,7 @@ class FrameworkCore
             return;
         }
 
+        $this->folderRequire("framework/utils");
         $this->folderRequire("framework/class");
         $this->folderRequire("app/controller");
         $this->folderRequire("app/model");
@@ -90,7 +91,7 @@ class FrameworkCore
 
         foreach ($dir as $fileinfo) {
             if (!$fileinfo->isDot()) {
-                require("{$this->projectRoot}/{$folder}/" . $fileinfo->getFilename());
+                require_once("{$this->projectRoot}/{$folder}/" . $fileinfo->getFilename());
             }
         }
     }
