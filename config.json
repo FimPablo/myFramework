@@ -1,8 +1,8 @@
 {
     "databaseConfig": {
-        "serverIp" : "",
-        "databaseName":"",
-        "serverLogin":"",
+        "serverIp" : "127.0.0.1",
+        "databaseName":"frameworkdb",
+        "serverLogin":"root",
         "serverPassword":""
     }
 }

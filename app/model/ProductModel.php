@@ -12,9 +12,9 @@ class ProductModel extends Model
 
         $this->table = "Products";
         $this
-        ->defineColumn('id')
-        ->defineColumn('name')
-        ->defineColumn('price');
+            ->defineColumn('id')
+            ->defineColumn('name')
+            ->defineColumn('price');
     }
 
     public function getProductById($id)
@@ -22,39 +22,38 @@ class ProductModel extends Model
         return $this
             ->where([[$this->id, '=', $id]])
             ->take(1)
-            ->before(10)
             ->get();
     }
 
     public function setValueById(int $id, float $value)
     {
         return $this
-        ->where([
-            [$this->id, '=', $id]
-        ])
-        ->set([
-            [$this->name, $value]
-        ]);
+            ->where([
+                [$this->id, '=', $id]
+            ])
+            ->set([
+                [$this->name, $value]
+            ]);
     }
 
     public function setNameById(int $id, string $name)
     {
         return $this
-        ->where([
-            [$this->id, '=', $id]
-        ])
-        ->set([
-            [$this->name, $name]
-        ]);
+            ->where([
+                [$this->id, '=', $id]
+            ])
+            ->set([
+                [$this->name, $name]
+            ]);
     }
 
     public function deleteProduct(int $id)
     {
         return $this
-        ->where([
-            [$this->id, '=', $id]
-        ])
-        ->delete();
+            ->where([
+                [$this->id, '=', $id]
+            ])
+            ->delete();
     }
 
     public function getProductQuantityById(int $id)
@@ -62,13 +61,13 @@ class ProductModel extends Model
         $storage = new StorageModel();
 
         return $this
-        ->where([
-            [$this->id, '=', $id],
-        ])
-        ->with($storage, [
-            [$this->id, "=", $storage->id]
-        ])
-        ->get();
+            ->where([
+                [$this->id, '=', $id],
+            ])
+            ->with($storage, [
+                [$this->id, "=", $storage->id]
+            ])
+            ->get();
     }
 
     public function newProduct(array $productInfo)

@@ -63,16 +63,28 @@ class Model extends DBConnector
 
         $this->query = QueryBuilder::buildSelectQuery($this->table, $this->queryStructure);
 
-        return $this->run();
+        $resultArray = $this->runQuery($this->query);
+        $returnArray = [];
+        foreach ($resultArray as $k => $model) {
+            foreach ($model as $key => $value) {
+                if(!isset($this->{$key}))
+                {
+                    $this->{$key} = new Column($key, $this->table);
+                }
+                $this->{$key}->value = $value;
+            }
+
+            $returnArray[] = $this;
+        }
+        return $returnArray;
     }
 
     protected function set(array $fieldsAndValues)
     {
         $this->queryStructure['updateFieldsAndValues'] = $fieldsAndValues;
 
-        $this->query = QueryBuilder::buildUpdateQuery($this->table, $this->queryStructure);
-
-        return $this->run();
+        return  $this->runQuery(QueryBuilder::buildUpdateQuery($this->table, $this->queryStructure));
+        
     }
 
     protected function delete()
@@ -87,14 +99,33 @@ class Model extends DBConnector
         $fieldsAndValues = [];
 
         foreach ($this as $key => $v) {
+            if(gettype($this->{$key}) != 'object')
+            {
+                continue;
+            }
             if(get_class($this->{$key}) != 'Framework\Column'){
                 continue;
             }
             $fieldsAndValues[] = $this->{$key};
         }
 
-        $this->query = QueryBuilder::buildInsertQuery($this->table, $fieldsAndValues);
-        return $this->run();
+        return  $this->runQuery(QueryBuilder::buildInsertQuery($this->table, $fieldsAndValues));
+    }
+
+    public function serialize()
+    {
+        $returnArray = [];
+        foreach ($this as $key => $v) {
+            if(gettype($this->{$key}) != 'object')
+            {
+                continue;
+            }
+            if(get_class($this->{$key}) != 'Framework\Column'){
+                continue;
+            }
+            $returnArray[$key] = $this->{$key}->value;
+        }
+        return $returnArray;
     }
 
     private function run()

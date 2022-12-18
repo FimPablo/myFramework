@@ -18,7 +18,7 @@ class QueryBuilder
             $query .= $fieldAndNickname[0]->name . " AS {$fieldAndNickname[1]}";
         }
 
-        if (count($queryStructure) < 1) {
+        if (count($queryStructure['fieldsAndNicknames']) < 1) {
             $query .= " * ";
         }
 
@@ -71,7 +71,6 @@ class QueryBuilder
     public static function buildDeleteQuery(string $table, array $queryStructure)
     {
         $query = "DELETE FROM {$table} ";
-
         $query .= self::buildWhereClause($queryStructure);
 
         return $query;
@@ -97,7 +96,7 @@ class QueryBuilder
             }
         }
 
-        return "INSER INTO {$table} ({$fieldList}) VALUES ($valueList)";
+        return "INSERT INTO {$table} ({$fieldList}) VALUES ($valueList)";
     }
 
     private function buildInnerJoinClause(array $queryStructure)
