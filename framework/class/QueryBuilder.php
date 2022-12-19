@@ -15,7 +15,7 @@ class QueryBuilder
                 $query .= ",";
             }
 
-            $query .= $fieldAndNickname[0]->name . " AS {$fieldAndNickname[1]}";
+            $query .= $fieldAndNickname[0]->name() . " AS {$fieldAndNickname[1]}";
         }
 
         if (count($queryStructure['fieldsAndNicknames']) < 1) {
@@ -60,7 +60,7 @@ class QueryBuilder
                 $query .= ",";
             }
 
-            $query .= " {$field->name} = " . FormatQueryValues::format($value);
+            $query .= " {$field->name()} = " . FormatQueryValues::format($value);
         }
 
         $query .= self::buildWhereClause($queryStructure);
@@ -87,7 +87,7 @@ class QueryBuilder
             }
             
 
-            $fieldList .= " {$FieldAndValue->name}";
+            $fieldList .= " {$FieldAndValue->name()}";
             $valueList .= " ".FormatQueryValues::format($FieldAndValue->value);
 
             if($k < count($fieldsAndValues)-1){
@@ -113,7 +113,7 @@ class QueryBuilder
                     throw new \Exception("Relation between not columns", 1);
                 }
 
-                $clause .= "{$relation[0]->name} {$relation[1]} {$relation[2]->name} ";
+                $clause .= "{$relation[0]->name()} {$relation[1]} {$relation[2]->name()} ";
             }
         }
 
@@ -128,7 +128,7 @@ class QueryBuilder
             if ($k > 0) {
                 $clause .= " AND ";
             }
-            $clause .= "{$condition[0]->name} {$condition[1]} {$condition[2]} ";
+            $clause .= "{$condition[0]->name()} {$condition[1]} {$condition[2]} ";
         }
 
         return $clause;

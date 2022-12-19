@@ -2,11 +2,6 @@
 
 use Framework\Route;
 
-use App\Controllers\TesteController;
+use App\Controllers\StoreController;
 
-Route::get('saaaaass', function () {
-    echo ('teste');
-    var_dump($_REQUEST);
-});
-
-Route::get('bbb', [TesteController::class, 'testeMetodo']);
+Route::get('getProduct', [StoreController::class, 'getProductById']);

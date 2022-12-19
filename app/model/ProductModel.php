@@ -19,10 +19,12 @@ class ProductModel extends Model
 
     public function getProductById($id)
     {
-        return $this
+        $productList = $this
             ->where([[$this->id, '=', $id]])
             ->take(1)
             ->get();
+
+        return $productList[0]->serialize();
     }
 
     public function setValueById(int $id, float $value)
@@ -32,7 +34,7 @@ class ProductModel extends Model
                 [$this->id, '=', $id]
             ])
             ->set([
-                [$this->name, $value]
+                [$this->price, $value]
             ]);
     }
 

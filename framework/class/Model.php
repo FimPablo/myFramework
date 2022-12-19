@@ -10,8 +10,6 @@ class Model extends DBConnector
     private array $queryStructure = [];
     protected string $table;
 
-    private string $query;
-
     public function __construct()
     {
         parent::__construct();
@@ -61,9 +59,7 @@ class Model extends DBConnector
     {
         $this->queryStructure['fieldsAndNicknames'] = $fieldsAndNicknames;
 
-        $this->query = QueryBuilder::buildSelectQuery($this->table, $this->queryStructure);
-
-        $resultArray = $this->runQuery($this->query);
+        $resultArray = $this->runQuery(QueryBuilder::buildSelectQuery($this->table, $this->queryStructure));
         $returnArray = [];
         foreach ($resultArray as $k => $model) {
             foreach ($model as $key => $value) {
@@ -83,18 +79,16 @@ class Model extends DBConnector
     {
         $this->queryStructure['updateFieldsAndValues'] = $fieldsAndValues;
 
-        return  $this->runQuery(QueryBuilder::buildUpdateQuery($this->table, $this->queryStructure));
+        return $this->runQuery(QueryBuilder::buildUpdateQuery($this->table, $this->queryStructure));
         
     }
 
     protected function delete()
     {
-        $this->query = QueryBuilder::buildDeleteQuery($this->table, $this->queryStructure);
-
-        return $this->run();
+        return $this->runQuery(QueryBuilder::buildDeleteQuery($this->table, $this->queryStructure));
     }
 
-    protected function new()
+    protected function new(array $fieldsAndValues = [])
     {
         $fieldsAndValues = [];
 
@@ -126,10 +120,5 @@ class Model extends DBConnector
             $returnArray[$key] = $this->{$key}->value;
         }
         return $returnArray;
-    }
-
-    private function run()
-    {
-        var_dump($this->query);
     }
 }
