@@ -4,7 +4,6 @@ namespace Framework;
 
 class FrameworkCore
 {
-
     private string $projectRoot;
     private array $definedRoutes;
     private array $allowedPathRequest;
@@ -13,7 +12,7 @@ class FrameworkCore
     private string $requestSource;
 
     public function __construct()
-    {
+    {  
         $this->projectRoot = dirname(__DIR__, 1);
         $this->request = $_REQUEST;
         $this->allowedPathRequest = ['view', 'api'];
@@ -26,6 +25,7 @@ class FrameworkCore
         $this->folderRequire("framework/class");
         $this->folderRequire("app/controller");
         $this->folderRequire("app/model");
+        $this->exceptionHandling();
 
         $this->initiateRoutes();
 
@@ -34,9 +34,20 @@ class FrameworkCore
         $this->requireRoute();
     }
 
-    private function getPathInfo()
+    private function exceptionHandling()
     {
-        $pathInfo = explode('/', $_SERVER['PATH_INFO']);;
+        require_once("ExceptionTreat.php");
+    }
+
+    private function getPathInfo()
+    {   
+        if (!isset($_SERVER['PATH_INFO'])) {
+            $this->requestPath = "view";
+            $this->requestSource = "Main";
+            return true;
+        }
+
+        $pathInfo = explode('/', $_SERVER['PATH_INFO']);
 
         if (count($pathInfo) < 3) {
             trigger_error("Bad Request", E_USER_ERROR);
@@ -62,6 +73,13 @@ class FrameworkCore
             trigger_error("Path not found", E_USER_ERROR);
         }
 
+        if ($this->requestPath == 'view') {
+            if (!file_exists("{$this->projectRoot}/app/view/{$this->requestSource}.php")) {
+                trigger_error("View not found", E_USER_ERROR);
+            }
+            return;
+        }
+
         if (!in_array($this->requestSource, array_keys($this->definedRoutes))) {
             trigger_error("Source not found", E_USER_ERROR);
         }
@@ -69,6 +87,11 @@ class FrameworkCore
 
     private function requireRoute()
     {
+        if ($this->requestPath == 'view') {
+            require_once("{$this->projectRoot}/app/view/{$this->requestSource}.php");
+            return;
+        }
+
         if (gettype($this->definedRoutes[$this->requestSource]['routeAction']) == 'object') {
             $this->definedRoutes[$this->requestSource]['routeAction']($this->request);
             return;
